@@ -109,7 +109,7 @@ public class MetaVerifiableTest {
     	// preset
     	VerifiableVerifier.register("did:meta:", MetadiumVerifier.class);	// META
     	VerifiableVerifier.register("did:icon:", IconVerifier.class);		// ICON
-    	VerifiableVerifier.setResolverUrl("https://testnetresolver.metadium.com"); // Set universal resolver. 테스트로 META resolver
+    	VerifiableVerifier.setResolverUrl("https://testnetresolver.metadium.com"); // Set universal resolver (http://129.254.194.103:9000). 테스트로 META resolver
     	
     	// verify VP
     	VerifiableVerifier verifiableVerifier = new VerifiableVerifier();
