@@ -19,7 +19,7 @@ Add dependency
 <dependency>
     <groupId>com.github.METADIUM</groupId>
     <artifactId>iitp-verifiable-sdk</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.2</version>
 </dependency>
 ```
 ### Gradle
@@ -36,7 +36,7 @@ Add dependency
 
 ```gradle
 dependencies {
-    implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.1.0'
+    implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.1.2'
 }
 ```
 
