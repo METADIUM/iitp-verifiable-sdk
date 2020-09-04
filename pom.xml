@@ -10,8 +10,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 	</properties>
 
 
@@ -50,11 +50,6 @@
 			<version>3.12.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>foundation.icon</groupId>
-			<artifactId>icon-sdk</artifactId>
-			<version>0.9.15</version>
-		</dependency>
 	</dependencies>
 
 	<repositories>

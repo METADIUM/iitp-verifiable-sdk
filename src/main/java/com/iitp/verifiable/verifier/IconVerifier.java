@@ -11,9 +11,10 @@ import com.iitp.icon.DidDocumentVo;
 import com.iitp.icon.PublicKeyVo;
 import com.iitp.verifiable.Verifiable;
 import com.iitp.verifiable.util.ECKeyUtils;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton;
 import com.nimbusds.jwt.JWTClaimsSet;
-
-import foundation.icon.did.jwt.Jwt;
+import com.nimbusds.jwt.SignedJWT;
 
 public class IconVerifier extends Verifier {
 	public static final String JSONLD_KEY_CREDENTIAL_SUBJECT_ID = "id";
@@ -31,7 +32,7 @@ public class IconVerifier extends Verifier {
 
 	@Override
 	public Verifiable verify(String verifiable, String didDocumentJson) throws Exception {
-		Jwt jwt = Jwt.decode(verifiable);
+		SignedJWT signedJWT = SignedJWT.parse(verifiable);
 		
 		ECPublicKey ecPublicKey = null;
 		if (publicKey != null) {
@@ -42,7 +43,7 @@ public class IconVerifier extends Verifier {
 				DIDDocVo response = new Gson().fromJson(didDocumentJson, DIDDocVo.class);
 				DidDocumentVo didDocument = response.getDidDocument();
                 List<PublicKeyVo> publicKeyVoList = didDocument.getPublicKey();
-                String kid = jwt.getHeader().getKid();
+                String kid = signedJWT.getHeader().getKeyID();
                 String keyId = kid.substring(kid.lastIndexOf('#')+1);
                 for (PublicKeyVo key : publicKeyVoList) {
                     if (key.getId().equals(keyId)) {
@@ -61,8 +62,12 @@ public class IconVerifier extends Verifier {
 			throw new IllegalStateException("Not found public key");
 		}
 		
-		if (jwt.verify(ecPublicKey).isSuccess()) {
-			JWTClaimsSet claims = JWTClaimsSet.parse(new Gson().toJson(jwt.getPayload().getMap()));
+		ECDSAVerifier verifier = new ECDSAVerifier(ecPublicKey);
+		verifier.getJCAContext().setProvider(BouncyCastleProviderSingleton.getInstance());
+
+		
+		if (signedJWT.verify(verifier)) {
+			JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
 			if (claims.getClaim("claim") != null) {
 				return toCredential(claims);
 			}
