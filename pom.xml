@@ -1,9 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.iitp</groupId>
 	<artifactId>iitp-verifiable-sdk</artifactId>
-	<version>0.1.2</version>
-	
+	<version>0.1.3</version>
+
 	<name>IITP verifiable SDK</name>
 
 	<properties>
@@ -11,8 +13,8 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 	</properties>
-	
-  
+
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -22,9 +24,9 @@
 		</dependency>
 
 		<dependency>
-    		<groupId>com.github.METADIUM</groupId>
-    		<artifactId>did-resolver-java-client</artifactId>
-    		<version>0.1.4</version>
+			<groupId>com.github.METADIUM</groupId>
+			<artifactId>did-resolver-java-client</artifactId>
+			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -41,27 +43,32 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>[1.52,)</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
 			<version>3.12.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>foundation.icon</groupId>
 			<artifactId>icon-did</artifactId>
 			<version>0.8.6</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/libs/icon-did-0.8.6.jar</systemPath>
 		</dependency>
-	</dependencies>  
- 
+	</dependencies>
+
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
+		
+        <repository>
+        	<id>in-project</id>
+        	<name>external jars</name>
+        	<url>file://${project.basedir}/libs</url>
+        </repository>
+
 	</repositories>
 
 </project>
