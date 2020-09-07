@@ -25,7 +25,7 @@ Add dependency
 <dependency>
     <groupId>com.github.METADIUM</groupId>
     <artifactId>did-sdk-java</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
 </dependency>
 ```
 ### Gradle
@@ -43,7 +43,7 @@ Add dependency
 ```gradle
 dependencies {
     implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.1.4'
-    implementation 'com.github.METADIUM:did-sdk-java:0.1.1'
+    implementation 'com.github.METADIUM:did-sdk-java:0.1.2'
 }
 ```
 
@@ -129,38 +129,28 @@ for (Object vcObject : resultVp.getVerifiableCredentials()) {
 ```
 
 
-### Metadium DID 키 변경 후 VC 재서명
+### Metadium DID 키 변경
 
 ```java
 // Set verifier
 VerifiableVerifier.register("did:meta:", MetadiumVerifier.class);	// META
 VerifiableVerifier.register("did:icon:", IconVerifier.class);		// ICON
-VerifiableVerifier.setResolverUrl("http://129.254.194.103:9000");
+VerifiableVerifier.setResolverUrl("http://129.254.194.103:9000"); // UNIVERSIAL : http://129.254.194.103:9000, META : http://129.254.194.113
+
+MetaDelegator delegator = new MetaDelegator("https://testdelegator.metadium.com", "https://testdelegator.metadium.com");
 
 // Metadium DID 생성
-MetaDelegator delegator = new MetaDelegator("https://testdelegator.metadium.com", "https://testdelegator.metadium.com");
 MetadiumWallet wallet = MetadiumWallet.createDid(delegator);
 
-// Metadium DID로 VC 생성
-VerifiableCredential vc = new VerifiableCredential();
-vc.setTypes(Arrays.asList("CREDENTIAL", "IdentificationCredential"));
-vc.setIssuanceDate(new Date());
-Map<String, Object> subject = new HashMap<>();
-subject.put("id", wallet.getDid());	// 소유자 DID. 반드시 넣어야 함
-subject.put("name", "product name");
-subject.put("SN", "serial name");
-subject.put("production_date", "2020-07-21");
-vc.setCredentialSubject(subject);
-String signedVc = new MetadiumSigner(wallet.getDid(), wallet.getKid(), wallet.getKey().getECPrivateKey()).sign(vc); // DID 로 서명
+// 변경할 키 생성 및 소유자에게 보낼 서명 값 생성. DID 는 알고 있어야 함
+MetadiumKey newKey = new MetadiumKey();
+String signature = delegator.signAddAssocatedKeyDelegate(did, newKey);
+BigInteger publicKey = newKey.getPublicKey();
 
-// VC 검증
-VerifiableVerifier verifiableVerifier = new VerifiableVerifier();
-VerifiableCredential resultVc = (VerifiableCredential)verifiableVerifier.verify(signedVc);
+// 소유자에게 변경할 키의 공개키와 서명값을 전달하여 키 변경
+wallet.updateKeyOfDid(delegator, publicKey, signature);
 
-// Metadium DID 키 변경
-wallet.updateKeyOfDid(delegator, new MetadiumKey());
-String signedVc2 = new MetadiumSigner(wallet.getDid(), wallet.getKid(), wallet.getKey().getECPrivateKey()).sign(vc); // 키가 변경된 DID 로 재서명
 
-// Metadium DID로 재서명 된 VC 검증
-String resignedVc = new MetadiumSigner(wallet.getDid(), wallet.getKid(), wallet.getKey().getECPrivateKey()).sign(vc); // DID 로 서명
+// 소유자 키 변경이 완료되면 새로운 Wallet 생성
+MetadiumWallet newWallet = new MetadiumWallet(did, newKey);
 ```
