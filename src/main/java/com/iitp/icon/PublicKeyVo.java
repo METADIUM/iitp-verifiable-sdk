@@ -1,5 +1,8 @@
 package com.iitp.icon;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -9,7 +12,7 @@ public class PublicKeyVo{
     public String id;
     @SerializedName("type")
     @Expose
-    public String type;
+    public Object type;
     @SerializedName("created")
     @Expose
     public Integer created;
@@ -28,14 +31,21 @@ public class PublicKeyVo{
         this.id = id;
     }
 
-    public String getType(){
-        return type;
+    @SuppressWarnings("unchecked")
+	public List<String> getType(){
+    	if (type instanceof String) {
+    		return Collections.singletonList((String)type);
+    	}
+    	else if (type instanceof List && ((List<?>)type).size() > 0 && ((List<?>)type).get(0) instanceof String) {
+    		return (List<String>)type;
+    	}
+    	return null;
     }
-
-    public void setType(String type){
+    
+    public void setType(Object type){
         this.type = type;
     }
-
+    
     public Integer getCreated(){
         return created;
     }
