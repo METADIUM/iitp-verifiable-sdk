@@ -127,3 +127,37 @@ for (Object vcObject : resultVp.getVerifiableCredentials()) {
 	}
 }
 ```
+
+### 서명 및 검증 (로그인)
+
+challenge 는 서버에서 SSI 앱으로 전달했다는 가정하에 SSI 앱에서 서명하고 검증 서버가 확인 하는 예제 코드
+
+#### META
+
+```java
+// DID 생성
+MetaDelegator delegator = new MetaDelegator("https://testdelegator.metadium.com", "https://testdelegator.metadium.com");
+MetadiumWallet wallet = MetadiumWallet.createDid(delegator);
+
+// META DID 로 SSI 앱에서 서명.
+byte[] challenge = "test_message".getBytes(StandardCharset.UTF_8);
+Sign.SignatureData signatureData = wallet.getKey().sign(challenge);
+ByteBuffer buffer = ByteBuffer.allocate(65);
+buffer.put(signatureData.getR());
+buffer.put(signatureData.getS());
+buffer.put(signatureData.getV());
+String signature = Numeric.toHexString(buffer.array());  // 서명값
+String did = wallet.getDid();
+
+// signature, did 를 검증해야 할 서버에 전달
+
+// 전달 받은 did, signature 와 미리 알고 있는 challenge 값으로 서버에서 서명 검증
+if (wallet.getDid().startsWith("did:meta:")) {
+	DidDocument document = DIDResolverAPI.getInstance().getDocument(did);
+	if (document.hasRecoverAddressFromSignature(challenge, signature)) {
+		// 검증 성공
+	}
+}
+```
+
+
