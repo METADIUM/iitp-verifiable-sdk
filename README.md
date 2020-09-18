@@ -96,15 +96,32 @@ String signedVp = new MetadiumSigner(userWallet.getDid(), userWallet.getKid(), u
 
 #### ICON
 
+해당 SDK 로 ICON 키로 서명
+
+```java
+Document didDocument;    // Icon SDK 에서 생성한 Did 의 Document
+DidKeyHolder keyHolder;  // Icon SDK 에서 생성한 Did 의 DidKeyHolder
+
+// VC 생성은 META 와 동일
+
+// VC 서명
+String signedVcByIcon = new MetadiumSigner(document.getId(), keyHolder.getKid(), (ECPrivateKey)keyHolder.getPrivateKey()).sign(vc);
+
+// VP 생성은 META 와 동일
+
+// VP 서명
+String signedVcByIcon = new MetadiumSigner(document.getId(), keyHolder.getKid(), (ECPrivateKey)keyHolder.getPrivateKey()).sign(vp);
+
+```
 
 #### INDY
 
+INDY SDK 사용해야 함
 
 ### VC / VP 검증
 
-현재는 META 만 검증 가능합니다  
-ICON 은 방화벽 정책 등록 이후에 사용 가능  
-INDY 는 별도로 verifier 추가가 필요함
+META / ICON 둘 다 검증 가능  
+INDY 는 INDY SDK 사용해야 함
 
 ```java
 // 한번만 미리 설정
