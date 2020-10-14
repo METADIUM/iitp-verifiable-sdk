@@ -149,7 +149,7 @@ for (Object vcObject : resultVp.getVerifiableCredentials()) {
 
 현재는 META 만 검증 가능 함
 
-[거래증명 VC 생성/검증 테스트 코드](/tree/master/src/test/java/com/iitp/test/ProofTransactionTest.java)
+[거래증명 VC 생성/검증 테스트 코드](tree/master/src/test/java/com/iitp/test/ProofTransactionTest.java)
 
 #### 거래 증명 VC 생성
 
