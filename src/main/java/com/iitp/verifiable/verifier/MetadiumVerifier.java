@@ -24,6 +24,10 @@ public class MetadiumVerifier extends Verifier {
 		this();
 		this.publicKey = publicKey;
 	}
+	
+	public void setPublicKey(ECPublicKey publicKey) {
+		this.publicKey = publicKey;
+	}
 
 
 	@Override

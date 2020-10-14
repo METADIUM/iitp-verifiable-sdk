@@ -19,13 +19,13 @@ Add dependency
 <dependency>
     <groupId>com.github.METADIUM</groupId>
     <artifactId>iitp-verifiable-sdk</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.METADIUM</groupId>
     <artifactId>did-sdk-java</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.3</version>
 </dependency>
 ```
 ### Gradle
@@ -42,8 +42,8 @@ Add dependency
 
 ```gradle
 dependencies {
-    implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.1.4'
-    implementation 'com.github.METADIUM:did-sdk-java:0.1.2'
+    implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.1.5'
+    implementation 'com.github.METADIUM:did-sdk-java:0.1.3'
 }
 ```
 
@@ -143,6 +143,91 @@ for (Object vcObject : resultVp.getVerifiableCredentials()) {
 		Map<String, Object> claims = (Map<String, Object>)resultVc.getCredentialSubject();
 	}
 }
+```
+
+### 거래증명 VC 생성 및 검증
+
+현재는 META 만 검증 가능 함
+
+[거래증명 VC 생성/검증 테스트 코드](/tree/master/src/test/java/com/iitp/test/ProofTransactionTest.java)
+
+#### 거래 증명 VC 생성
+
+```java
+private String makeTxProofVC(MetadiumWallet sellerWallet, String buyerDid, BigInteger price, BigInteger blockNumber, String beforeSignedVC) throws Exception {
+	Map<String, String> claims = Stream.of(new String[][] {
+		{ "ProductCredential_id", "did:meta:testnet:0000000000000000000000000000000000000000000000000000000000001eee" },	// 테스트로 상품 DID 임의로 고정
+		{ "seller_id", sellerWallet.getDid() },
+		{ "buyer_id", buyerDid },
+		{ "BlockNumber", blockNumber.toString() },
+		{ "price", price.toString() },
+		{ "sell_date", new SimpleDateFormat("yyyy-MM-dd").format(new Date()) }
+	}).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+	
+	// 이전 거래증명 VC를 claim 에 포함한다.
+	if (beforeSignedVC != null) {
+		claims.put("OldProductProofCredential", beforeSignedVC);
+	}
+	
+	VerifiableCredential productVC = new VerifiableCredential();
+	productVC.setIssuer(URI.create(sellerWallet.getDid()));
+	productVC.addTypes(Collections.singletonList("ProductCredential"));
+	productVC.setIssuanceDate(new Date());
+	productVC.setId(URI.create(UUID.randomUUID().toString()));
+	productVC.setCredentialSubject(claims);
+	
+	// 판매자가 VC 서명
+	MetadiumSigner signer = new MetadiumSigner(sellerWallet.getDid(), sellerWallet.getKid(), sellerWallet.getKey().getECPrivateKey());
+	return signer.sign(productVC);
+}
+
+MetaDelegator delegator = new MetaDelegator("https://testdelegator.metadium.com", "https://api.metadium.com/dev");
+// 판매자 DID 생성
+MetadiumWallet sellerWallet = MetadiumWallet.createDid(delegator);
+
+// 구매자 DID 생성
+MetadiumWallet buyerWallet = MetadiumWallet.createDid(delegator);
+
+// 거래_1 에 대한 판매자가 거래증명 VC 생성
+String signedProductVC1 = makeTxProofVC(sellerWallet, buyerWallet.getDid(), BigInteger.valueOf(16000), delegator.currentBlockNumber(), null);
+
+// 거래_2 에 대한 판매자가 거래증명 VC 생성
+MetadiumWallet buyer2Wallet = MetadiumWallet.createDid(delegator);
+String signedProductVC2 = makeTxProofVC(buyerWallet, buyer2Wallet.getDid(), BigInteger.valueOf(20000), delegator.currentBlockNumber(), signedProductVC1);
+
+// 거래_3 에 대한 판매자가 거래증명 VC 생성
+MetadiumWallet buyer3Wallet = MetadiumWallet.createDid(delegator);
+String signedProductVC3 = makeTxProofVC(buyer2Wallet, buyer3Wallet.getDid(), BigInteger.valueOf(30000), delegator.currentBlockNumber(), signedProductVC2);
+```
+
+#### 거래 증명 VC 검증
+
+```java
+VerifiableCredential verifyTxProofVC(MetaDelegator delegator, String signedVc) throws Exception {
+	MetadiumVerifier verifier = new MetadiumVerifier();
+	
+	// VC 에서 blockNumber, issuer 를 먼저 가져온다.
+	VerifiableCredential vc = verifier.toCredential(SignedJWT.parse(signedVc).getJWTClaimsSet());
+	BigInteger blockNumber = new BigInteger(((Map<String, String>)vc.getCredentialSubject()).get("BlockNumber"));
+	String issuerDid = vc.getIssuer().toString();
+	
+	// VC 생성할 당시의 public key 를 얻는다.
+	BigInteger publicKey = delegator.getPublicKey(issuerDid, blockNumber);
+	verifier.setPublicKey(com.iitp.verifiable.util.ECKeyUtils.toECPublicKey(publicKey, "secp256k1"));
+	
+	// VC 를 검증한다.
+	return (VerifiableCredential)verifier.verify(signedVc, null);
+}
+
+// 거래증명VC 와 이전 모든 거래증명VC 를 검증한다.
+String txProofVC = "...";
+do {
+	VerifiableCredential vc = verifyTxProofVC(delegator, vcToVerify);
+	
+	assertTrue(vc != null);
+	
+	vcToVerify = ((Map<String, String>)vc.getCredentialSubject()).get("OldProductProofCredential");
+} while (vcToVerify != null);
 ```
 
 ### 서명 및 검증 (로그인)
