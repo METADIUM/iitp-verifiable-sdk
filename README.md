@@ -19,7 +19,7 @@ Add dependency
 <dependency>
     <groupId>com.github.METADIUM</groupId>
     <artifactId>iitp-verifiable-sdk</artifactId>
-    <version>0.1.5</version>
+    <version>0.2.0</version>
 </dependency>
 
 <dependency>
@@ -42,7 +42,7 @@ Add dependency
 
 ```gradle
 dependencies {
-    implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.1.5'
+    implementation 'com.github.METADIUM:iitp-verifiable-sdk:0.2.0'
     implementation 'com.github.METADIUM:did-sdk-java:0.1.3'
 }
 ```
@@ -76,7 +76,7 @@ calendar.add(Calendar.YEAR, 2);
 
 // VC 발급 - Issuer 가 발급
 VerifiableCredential vc = new VerifiableCredential();
-vc.setTypes(Arrays.asList("CREDENTIAL", "IdentificationCredential"));
+vc.addTypes(Collections.singletonList("IdentificationCredential"));
 vc.setExpirationDate(calendar.getTime());
 vc.setIssuanceDate(new Date());
 Map<String, Object> subject = new HashMap<>();
@@ -89,7 +89,7 @@ String signedVc = new MetadiumSigner(issuerWallet.getDid(), issuerWallet.getKid(
 
 // VP 생성 - 사용자가 VP 생성
 VerifiablePresentation vp = new VerifiablePresentation();
-vp.setTypes(Arrays.asList("PRESENTATION", "MyPresentation"));
+vp.addTypes(Collections.singletonList("MyPresentation"));
 vp.addVerifiableCredential(signedVc);
 String signedVp = new MetadiumSigner(userWallet.getDid(), userWallet.getKid(), userWallet.getKey().getECPrivateKey()).sign(vp); // 사용자의 DID 로 서명
 ```
