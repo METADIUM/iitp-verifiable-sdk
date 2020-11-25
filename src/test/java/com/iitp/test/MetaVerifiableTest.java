@@ -3,8 +3,8 @@ package com.iitp.test;
 import java.math.BigInteger;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class MetaVerifiableTest {
     	
     	// make VC
     	VerifiableCredential vc = new VerifiableCredential();
-    	vc.setTypes(Arrays.asList("CREDENTIAL", "IdentificationCredential"));
+    	vc.addTypes(Collections.singletonList("IdentificationCredential"));
     	vc.setExpirationDate(calendar.getTime());
     	vc.setIssuanceDate(new Date());
     	Map<String, Object> subject = new HashMap<>();
@@ -71,7 +71,7 @@ public class MetaVerifiableTest {
     	
     	// issued VP
     	VerifiablePresentation vp = new VerifiablePresentation();
-    	vp.setTypes(Arrays.asList("PRESENTATION", "MyPresentation"));
+    	vp.addTypes(Collections.singletonList("MyPresentation"));
     	vp.addVerifiableCredential(vc);
     	System.out.println("VP = "+vp.toJSONString());
     	
@@ -99,7 +99,7 @@ public class MetaVerifiableTest {
     	// issued VC / VP with META
     	String vc = createVC();
     	VerifiablePresentation vp = new VerifiablePresentation();
-    	vp.setTypes(Arrays.asList("PRESENTATION", "MyPresentation"));
+    	vp.addTypes(Collections.singletonList("MyPresentation"));
     	vp.addVerifiableCredential(vc);
     	System.out.println("VP = "+vp.toJSONString());
     	MetadiumSigner signer = new MetadiumSigner(USER_DID, USER_KID, USER_PRIVATE_KEY);

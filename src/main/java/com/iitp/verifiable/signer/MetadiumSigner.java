@@ -61,8 +61,6 @@ public class MetadiumSigner implements VerifiableSigner {
 		URI holder = vp.getHolder();
 
 		JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
-		builder.claim("version", "1.0");
-		builder.claim("type", vp.getTypes());
 		if (jti != null) {
 			// move id to jwt.jti
 			builder.jwtID(jti.toString());
@@ -73,7 +71,7 @@ public class MetadiumSigner implements VerifiableSigner {
 			vpObject.remove(VerifiablePresentation.JSONLD_KEY_HOLDER);
 		}
 		builder.claim(JWT_HEADER_NONCE, UUID.randomUUID().toString());
-		builder.claim("credential", vp.getVerifiableCredentials());
+		builder.claim("vp", vpObject);
 
 		return builder.build();
 	}
@@ -102,30 +100,37 @@ public class MetadiumSigner implements VerifiableSigner {
 		}
 
 		JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
-		builder.claim("version", "1.0");
-		builder.claim("type", vc.getTypes());
 		if (jti != null) {
 			// move id to jwt.jti
 			builder.jwtID(jti.toString());
+			vcObject.remove(Verifiable.JSONLD_KEY_ID);
 		}
 		if (expireDate != null) {
 			// move expire date to jwt.exp
 			builder.expirationTime(expireDate);
+			vcObject.remove(VerifiableCredential.JSONLD_KEY_EXPIRATION_DATE);
 		}
 		if (issuer != null) {
 			// move issuer to jwt.iss
 			builder.issuer(issuer.toString());
+			
+			vcObject.remove(VerifiableCredential.JSONLD_KEY_ISSUSER);
+			Map<String, Object> issuerObject = vc.getIssuerObject();
+			if (issuerObject != null) {
+				vcObject.put(VerifiableCredential.JSONLD_KEY_ISSUSER, issuerObject);
+			}
 		}
 		if (issuedDate != null) {
 			// move issue time to jwt.nbf
 			builder.issueTime(issuedDate);
+			vcObject.remove(VerifiableCredential.JSONLD_KEY_ISSUANCE_DATE);
 		}
 		if (subject != null) {
 			// set subject credentialSubject.id
 			builder.subject(subject.toString());
 		}
 		builder.claim(JWT_HEADER_NONCE, UUID.randomUUID().toString());
-		builder.claim("claim", vcObject.get(VerifiableCredential.JSONLD_KEY_CREDENTIAL_SUBJECT));
+		builder.claim("vc", vcObject);
 
 		return builder.build();
 	}

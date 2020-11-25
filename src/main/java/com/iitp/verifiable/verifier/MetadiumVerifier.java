@@ -61,10 +61,10 @@ public class MetadiumVerifier extends Verifier {
 		
 		if (signedJWT.verify(verifier)) {
 			JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
-			if (claims.getClaim("claim") != null) {
+			if (claims.getClaim("vc") != null) {
 				return toCredential(claims);
 			}
-			else if (claims.getClaim("credential") != null) {
+			else if (claims.getClaim("vp") != null) {
 				return toPresentation(claims);
 			}
 

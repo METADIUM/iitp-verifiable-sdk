@@ -23,10 +23,9 @@ public abstract class Verifier {
 		String issuer = claimsSet.getIssuer();
 		Date issuedDate = claimsSet.getIssueTime();
 		String subject = claimsSet.getSubject();
-		Map<String, Object> vcClaim = (Map<String, Object>)claimsSet.getClaim("claim");
+		Map<String, Object> vcClaim = (Map<String, Object>)claimsSet.getClaim("vc");
 		
-		VerifiableCredential vc = new VerifiableCredential();
-		vc.setTypes((Collection<String>)claimsSet.getClaim("type"));
+		VerifiableCredential vc = new VerifiableCredential(vcClaim);
 		if (id != null) {
 			vc.setId(URI.create(id));
 		}
@@ -45,7 +44,6 @@ public abstract class Verifier {
 		if (issuedDate != null) {
 			vc.setIssuanceDate(issuedDate);
 		}
-		vc.setCredentialSubject(vcClaim);
 		if (subject != null) {
 			Object credentialSubject = vc.getCredentialSubject();
 			if (credentialSubject instanceof Map) {
@@ -67,18 +65,14 @@ public abstract class Verifier {
 		String id = claimsSet.getJWTID();
 		String holder = claimsSet.getIssuer();
 		
-		Collection<Object> vpClaim = (Collection<Object>)claimsSet.getClaim("credential");
+		Object vpClaim = (Object)claimsSet.getClaim("vp");
 		
-		VerifiablePresentation vp = new VerifiablePresentation();
+		VerifiablePresentation vp = new VerifiablePresentation((Map<String, Object>)vpClaim);
 		if (id != null) {
 			vp.setId(URI.create(id));
 		}
 		if (holder != null) {
 			vp.setHolder(URI.create(holder));
-		}
-		vp.setTypes((Collection<String>)claimsSet.getClaim("type"));
-		for (Object object : vpClaim) {
-			vp.addVerifiableCredential(object);
 		}
 		
 		return vp;
