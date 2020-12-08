@@ -20,6 +20,8 @@ public class VerifiableVerifier {
 	private static String resolverUrl;
 	private static Map<String, Class<? extends Verifier>> signerMap = new HashMap<>();
 	
+	private static final OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+	
 	public static void register(String didPrefix, Class<? extends Verifier> verifier) {
 		signerMap.put(didPrefix, verifier);
 	}
@@ -94,8 +96,7 @@ public class VerifiableVerifier {
     	Request request = new Request.Builder()
     			.url(url+"/1.0/identifiers/"+did)
     			.build();
-    	
-        OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+        
 		Response response = okHttpClient.newCall(request).execute();
 		
 		if (response.isSuccessful()) {
