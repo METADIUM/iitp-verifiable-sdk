@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iitp.verifiable.verifier.Verifier;
 import com.nimbusds.jwt.SignedJWT;
 
+import net.jodah.expiringmap.ExpiringMap;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,12 +24,21 @@ public class VerifiableVerifier {
 	
 	private static final OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
 	
+	private static final ExpiringMap<String, String> didDocumentCache = ExpiringMap.builder()
+            .variableExpiration()
+            .expiration(1, TimeUnit.MINUTES)
+            .build();
+	
 	public static void register(String didPrefix, Class<? extends Verifier> verifier) {
 		signerMap.put(didPrefix, verifier);
 	}
 	
 	public static void setResolverUrl(String url) {
 		resolverUrl = url;
+	}
+	
+	public static void setDidDocumentCacheTime(long duration, TimeUnit timeUnit) {
+		didDocumentCache.setExpiration(duration, timeUnit);
 	}
 	
 	public Verifiable verify(String verifableJson) throws Exception {
@@ -93,6 +104,12 @@ public class VerifiableVerifier {
 	
 	
     private String getDidDocument(String url, String did) throws IOException {
+    	String didDocumentJson = didDocumentCache.get(did);
+    	if (didDocumentJson != null) {
+    		System.out.println("cached did document : "+didDocumentJson);
+    		return didDocumentJson;
+    	}
+    	
     	Request request = new Request.Builder()
     			.url(url+"/1.0/identifiers/"+did)
     			.build();
@@ -100,7 +117,9 @@ public class VerifiableVerifier {
 		Response response = okHttpClient.newCall(request).execute();
 		
 		if (response.isSuccessful()) {
-			return response.body().string();
+			didDocumentJson = response.body().string();
+			didDocumentCache.put(did, didDocumentJson);
+			return didDocumentJson;
 		}
 		else {
 			return null;
